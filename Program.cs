@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Win32;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using Microsoft.Win32;
 
 namespace PockerPicker
 {
@@ -16,7 +16,17 @@ namespace PockerPicker
 
         static string m_usage = @$"Usage : PocketPicker ""Template.json path"" ""save path""{Environment.NewLine}Powered by Sean Liu";
 
+        static Mutex mutex = new(true, "{8F6F0AC4-B9A1-45fd-A8CF-72F04E6BDE8F}");
+
+        delegate void Startapp(string[] args);
+
+        [STAThread]
         static void Main(string[] args)
+        {            
+            SingleInstance(Start, args);
+        }
+
+        static void Start(string[] args)
         {
             Console.CancelKeyPress += (sender, eArgs) =>
             {
@@ -25,8 +35,8 @@ namespace PockerPicker
             };
 
 #if DEBUG
-            const string debug_rules = @"C:\RPA\template.json";
-            const string debug_savepath = @"C:\RPA\Catcher";
+            const string debug_rules = @"D:\RPA\template.json";
+            const string debug_savepath = @"D:\RPA\";
             args = new string[] { debug_rules, debug_savepath };
 #endif
             if (args.Length == 0)
@@ -45,16 +55,32 @@ namespace PockerPicker
             var rules = RulesReader.GetDictFromFile(rulesPath);
             SaveFile.SavePath = savePath;
 
-            TitanWebProxyUtility proxy = new TitanWebProxyUtility(rules);
-
+            TitanWebProxyUtility proxy = new(rules);
             Console.WriteLine("Start..");
-            Thread t = new(proxy.ProxyStart)
-            {
-                IsBackground = true
-            };
-            t.Start();
+
+            proxy.ProxyStart();
+
+            //Thread t = new(proxy.ProxyStart)
+            //{
+            //    IsBackground = true
+            //};
+            //t.Start();
 
             _quitEvent.WaitOne();
+        }
+
+        static void SingleInstance(Startapp job, string[] args)
+        {
+            if (mutex.WaitOne(TimeSpan.Zero, true))
+            {
+                job(args);
+                mutex.ReleaseMutex();
+            }
+            else
+            {
+                Console.WriteLine("Only one PocketPicker instance allowed.");
+                return;
+            }
         }
 
         [SupportedOSPlatform("windows")]

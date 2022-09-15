@@ -87,58 +87,10 @@ namespace PockerPicker
 
         private async Task OnBeforeTunnelConnectRequest(object sender, TunnelConnectSessionEventArgs e)
         {
-            string hostname = e.HttpClient.Request.RequestUri.Host;
-
-            if (hostname.Contains("dropbox.com"))
-            {
-                // Exclude Https addresses you don't want to proxy
-                // Useful for clients that use certificate pinning
-                // for example dropbox.com
-                e.DecryptSsl = false;
-            }
         }
 
         public async Task OnRequest(object sender, SessionEventArgs e)
         {
-            //Console.WriteLine(e.HttpClient.Request.Url);
-
-            // read request headers
-            //var requestHeaders = e.HttpClient.Request.Headers;
-
-            //var method = e.HttpClient.Request.Method.ToUpper();
-            //if ((method == "POST" || method == "PUT" || method == "PATCH"))
-            //{
-            //    // Get/Set request body bytes
-            //    byte[] bodyBytes = await e.GetRequestBody();
-            //    e.SetRequestBody(bodyBytes);
-
-            //    // Get/Set request body as string
-            //    string bodyString = await e.GetRequestBodyAsString();
-            //    e.SetRequestBodyString(bodyString);
-
-            //    // store request 
-            //    // so that you can find it from response handler 
-            //    e.UserData = e.HttpClient.Request;
-            //}
-
-            //// To cancel a request with a custom HTML content
-            //// Filter URL
-            //if (e.HttpClient.Request.RequestUri.AbsoluteUri.Contains("google.com"))
-            //{
-            //    e.Ok("<!DOCTYPE html>" +
-            //        "<html><body><h1>" +
-            //        "Website Blocked" +
-            //        "</h1>" +
-            //        "<p>Blocked by titanium web proxy.</p>" +
-            //        "</body>" +
-            //        "</html>");
-            //}
-
-            //// Redirect example
-            //if (e.HttpClient.Request.RequestUri.AbsoluteUri.Contains("wikipedia.org"))
-            //{
-            //    e.Redirect("https://www.paypal.com");
-            //}
         }
 
         
@@ -152,15 +104,15 @@ namespace PockerPicker
             {
                 if (e.HttpClient.Response.StatusCode == 200)
                 {
-                    string ruleValue = GetRule(requestUri);
+                    string[] ruleValues = GetRules(requestUri);
                     //if (e.HttpClient.Response.ContentType != null && e.HttpClient.Response.ContentType.Trim().ToLower().Contains("text/html"))
-                    if (e.HttpClient.Response.ContentType != null && !String.IsNullOrWhiteSpace(ruleValue))
+                    if (e.HttpClient.Response.ContentType != null && (ruleValues.Length != 0))
                     {
                         //e.SetResponseBody(bodyBytes);
 
                         string body = await e.GetResponseBodyAsString();
                         //e.SetResponseBodyString(body);
-                        SaveFile.SaveTo(ruleValue, body);
+                        SaveFile.SaveTo(ruleValues, body);
                         Console.WriteLine($"Request : {Environment.NewLine} {requestUri}");
                         Console.WriteLine(tmp);
                     }
@@ -211,6 +163,19 @@ namespace PockerPicker
                 }
             }
             return res;
+        }
+
+        private string[] GetRules(string uri)
+        {
+            List<string> res = new();
+            foreach (string key in Rules.Keys)
+            {
+                if (Regex.IsMatch(uri, key))
+                {
+                    res.Add(Rules[key]);
+                }
+            }
+            return res.ToArray();
         }
     }
 }

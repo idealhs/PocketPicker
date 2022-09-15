@@ -26,5 +26,25 @@ namespace PockerPicker
             }
         }
 
+        public static void SaveTo(string[] fileNames, string body)
+        {
+            body = body.Insert(0, @"{""Response"":");
+            body = body.Insert(body.Length, "}");
+            foreach (string fileName in fileNames)
+            {
+                try
+                {
+                    using (FileStream fs = File.Create($"{SavePath}\\{fileName}.json"))
+                    {
+                        byte[] buffer = new UTF8Encoding(true).GetBytes(body);
+                        fs.Write(buffer, 0, buffer.Length);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Save to File ERROR : {ex}");
+                }
+            }
+        }
     }
 }

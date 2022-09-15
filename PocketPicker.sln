@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PockerPicker", "PockerPicker.csproj", "{ACC86F12-3E67-470E-B9E4-CD5B0682EE17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PocketPicker", "PocketPicker.csproj", "{ACC86F12-3E67-470E-B9E4-CD5B0682EE17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
