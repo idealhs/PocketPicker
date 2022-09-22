@@ -9,6 +9,10 @@
 *.vsidx
 *.lock
 
+#Visual Studio
+
+.vs/
+
 # Build results
 
 [Dd]ebug/
